@@ -12,10 +12,18 @@
 
 #include "../philosophers.h"
 
-long	get_time(void)
+void	cleanup(t_data *data)
 {
-	struct timeval	tv;
+	int		i;
 
-	gettimeofday(&tv, NULL);
-	return ((tv.tv_sec * 1000) + (tv.tv_usec / 1000));
+	i = 0;
+	while (i < data->nb_philos)
+	{
+		pthread_mutex_destroy(&data->forks[i]);
+		i++;
+	}
+	pthread_mutex_destroy(&data->print_lock);
+	pthread_mutex_destroy(&data->death_lock);
+	free(data->forks);
+	free(data->philos);
 }

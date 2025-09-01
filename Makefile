@@ -7,7 +7,7 @@ CFLAGS		= -Wall -Wextra -Werror
 SRCS_DIR	= .
 UTILS_DIR = utils
 
-SRCS		= parsing.c main.c $(UTILS_DIR)/init.c $(UTILS_DIR)/get_time.c routine.c $(UTILS_DIR)/precise_usleep.c
+SRCS		= parsing.c main.c $(UTILS_DIR)/init.c $(UTILS_DIR)/get_time.c routine.c $(UTILS_DIR)/precise_usleep.c $(UTILS_DIR)/cleanup.c monitoring_routine.c $(UTILS_DIR)/start_threads.c $(UTILS_DIR)/is_number.c $(UTILS_DIR)/print_status.c
 
 OBJS		= $(SRCS:.c=.o)
 
@@ -15,7 +15,6 @@ all: $(NAME)
 
 $(NAME): $(OBJS)
 	$(CC) $(CFLAGS) $(OBJS) -o $(NAME)
-	"
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
