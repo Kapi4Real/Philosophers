@@ -44,6 +44,7 @@ typedef struct s_data
 	pthread_mutex_t	*forks;
 	pthread_mutex_t	print_lock;
 	pthread_mutex_t	death_lock;
+	pthread_mutex_t	meal_lock;
 	int				someone_died;
 	pthread_t		monitor;
 	t_philo			*philos;

@@ -30,6 +30,8 @@ int	init_mutexes(t_data *data)
 		return (0);
 	if (pthread_mutex_init(&data->death_lock, NULL) != 0)
 		return (0);
+	if (pthread_mutex_init(&data->meal_lock, NULL) != 0)
+		return (0);
 	return (1);
 }
 

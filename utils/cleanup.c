@@ -24,6 +24,7 @@ void	cleanup(t_data *data)
 	}
 	pthread_mutex_destroy(&data->print_lock);
 	pthread_mutex_destroy(&data->death_lock);
+	pthread_mutex_destroy(&data->meal_lock);
 	free(data->forks);
 	free(data->philos);
 }

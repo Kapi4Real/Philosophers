@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   builtins.c                                         :+:      :+:    :+:   */
+/*   routine.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ccouton <marvin@42.fr>                     +#+  +:+       +#+        */
+/*   By: ccouton <ccouton@student.42.fr>      +#+  +:+       +#+              */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/06/29 00:00:00 by ccouton           #+#    #+#             */
-/*   Updated: 2025/06/29 00:00:00 by ccouton          ###   ########.fr       */
+/*   Created: 2025/10/15 00:29:04 by ccouton       #+#    #+#                 */
+/*   Updated: 2025/10/15 00:29:04 by ccouton      ###   ########.fr           */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,13 @@
 
 static void	take_forks(t_philo *philo)
 {
+	int	stop;
+
+	pthread_mutex_lock(&philo->data->death_lock);
+	stop = philo->data->someone_died;
+	pthread_mutex_unlock(&philo->data->death_lock);
+	if (stop)
+		return ;
 	if (philo->id % 2 == 0)
 	{
 		pthread_mutex_lock(philo->right_fork);
@@ -30,25 +37,52 @@ static void	take_forks(t_philo *philo)
 	}
 }
 
-static void	eat(t_philo *philo)
+static void	eat_and_release(t_philo *philo)
 {
-	print_status(philo, "is eating");
-	philo->last_meal = get_time();
-	precise_usleep(philo->data->time_to_eat);
-	philo->nb_eaten++;
-}
+	int	stop;
 
-static void	release_forks(t_philo *philo)
-{
+	pthread_mutex_lock(&philo->data->death_lock);
+	stop = philo->data->someone_died;
+	pthread_mutex_unlock(&philo->data->death_lock);
+	if (stop)
+		return ;
+	print_status(philo, "is eating");
+	pthread_mutex_lock(&philo->data->meal_lock);
+	philo->last_meal = get_time();
+	philo->nb_eaten++;
+	pthread_mutex_unlock(&philo->data->meal_lock);
+	precise_usleep(philo->data->time_to_eat);
 	pthread_mutex_unlock(philo->left_fork);
 	pthread_mutex_unlock(philo->right_fork);
 }
 
 static void	sleep_and_think(t_philo *philo)
 {
+	int	stop;
+
+	pthread_mutex_lock(&philo->data->death_lock);
+	stop = philo->data->someone_died;
+	pthread_mutex_unlock(&philo->data->death_lock);
+	if (stop)
+		return ;
 	print_status(philo, "is sleeping");
 	precise_usleep(philo->data->time_to_sleep);
+	pthread_mutex_lock(&philo->data->death_lock);
+	stop = philo->data->someone_died;
+	pthread_mutex_unlock(&philo->data->death_lock);
+	if (stop)
+		return ;
 	print_status(philo, "is thinking");
+}
+
+static int	check_stop(t_philo *philo)
+{
+	int	stop;
+
+	pthread_mutex_lock(&philo->data->death_lock);
+	stop = philo->data->someone_died;
+	pthread_mutex_unlock(&philo->data->death_lock);
+	return (stop);
 }
 
 void	*philosopher_routine(void *arg)
@@ -62,11 +96,18 @@ void	*philosopher_routine(void *arg)
 		precise_usleep(philo->data->time_to_die);
 		return (NULL);
 	}
-	while (!philo->data->someone_died)
+	while (!check_stop(philo))
 	{
 		take_forks(philo);
-		eat(philo);
-		release_forks(philo);
+		if (check_stop(philo))
+		{
+			pthread_mutex_unlock(philo->left_fork);
+			pthread_mutex_unlock(philo->right_fork);
+			break ;
+		}
+		eat_and_release(philo);
+		if (check_stop(philo))
+			break ;
 		sleep_and_think(philo);
 	}
 	return (NULL);

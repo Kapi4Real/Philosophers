@@ -2,7 +2,7 @@ NAME		= philo
 
 CC			= cc
 CFLAGS		= -Wall -Wextra -Werror
-# CFLAGS	+= -g
+CFLAGS	+= -g
 
 SRCS_DIR	= .
 UTILS_DIR = utils
