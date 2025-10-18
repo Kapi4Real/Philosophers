@@ -51,6 +51,7 @@ int	init_philosophers(t_data *data)
 		data->philos[i].left_fork = &data->forks[i];
 		data->philos[i].right_fork = &data->forks[(i + 1) % data->nb_philos];
 		data->philos[i].data = data;
+		data->philos[i].thread = 0;
 		i++;
 	}
 	return (1);
